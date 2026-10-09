@@ -1170,12 +1170,79 @@ function seasonBox(A,gp,adv){
   }).join('');
   return '<div class="tw"><table class="t"><thead><tr><th>Jugador</th><th>PJ</th><th>Min</th><th>Min/PJ</th><th>Pts</th><th>Pts/PJ</th>'+advTh(adv)+'<th>Reb</th><th>Ast</th><th>Rob</th><th>Per</th><th>Tap</th><th>Fal</th><th>F.Rec</th><th>+/-</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
+/* ---------- Exportar CSV ---------- */
+function csvCell(v){var s=v===null||v===undefined?'':String(v);if(/[";\n]/.test(s))return '"'+s.replace(/"/g,'""')+'"';return s;}
+function csvRows(rows){return rows.map(function(r){return r.map(csvCell).join(';');}).join('\r\n');}
+function pctCell(v,ok){return ok?Math.round(v*100)+'%':'';}
+function ourBoxCSVRows(A,g,adv){
+  var used=S.players.filter(function(p){return A.pl[p.id]||g.start.indexOf(p.id)>=0;}).sort(byNum);
+  var head=['Dorsal','Jugador','Min','Pts','T2M','T2A','T3M','T3A','TLM','TLA'];
+  if(adv)head=head.concat(['eFG%','TS%','PPS']);
+  head=head.concat(['Reb','Ast','Rob','Per','Tap','Fal','F.Rec','+/-']);
+  var rows=[head];
+  used.forEach(function(p){
+    var s=A.pl[p.id]||blank(),row=[p.num,p.name,mmss(s.min),s.pts,s.s2m,s.s2a,s.s3m,s.s3a,s.ftm,s.fta];
+    if(adv){var d=D(s);row=row.concat([pctCell(d.efg,d.fga>0),pctCell(d.ts,d.fga+s.fta>0),d.fga?pps(s).toFixed(2):'']);}
+    row=row.concat([s.oreb+s.dreb,s.ast,s.stl,s.tov,s.blk,s.pf,s.drew,sgn(s.pm)]);
+    rows.push(row);
+  });
+  var t=A.us,diff=A.us.pts-A.opp.pts,trow=['','Equipo','',t.pts,t.s2m,t.s2a,t.s3m,t.s3a,t.ftm,t.fta];
+  if(adv){var dt=D(t);trow=trow.concat([pctCell(dt.efg,dt.fga>0),pctCell(dt.ts,dt.fga+t.fta>0),dt.fga?pps(t).toFixed(2):'']);}
+  trow=trow.concat([t.oreb+t.dreb,t.ast,t.stl,t.tov,t.blk,t.pf,t.drew,sgn(diff)]);
+  rows.push(trow);
+  return rows;
+}
+function oppBoxCSVRows(A,adv){
+  var head=['Dorsal','Pts','T2M','T2A','T3M','T3A','TLM','TLA'];
+  if(adv)head=head.concat(['eFG%','TS%','PPS']);
+  head=head.concat(['Reb','Ast','Rob','Per','Tap','Fal','F.Rec']);
+  var rows=[head];
+  oppRows(A).forEach(function(r){
+    var s=r.s,row=[r.k==='EQ'?'Equipo':r.k,s.pts,s.s2m,s.s2a,s.s3m,s.s3a,s.ftm,s.fta];
+    if(adv){var d=D(s);row=row.concat([pctCell(d.efg,d.fga>0),pctCell(d.ts,d.fga+s.fta>0),d.fga?pps(s).toFixed(2):'']);}
+    row=row.concat([s.oreb+s.dreb,s.ast,s.stl,s.tov,s.blk,s.pf,s.drew]);
+    rows.push(row);
+  });
+  var t=A.opp,trow=['Total',t.pts,t.s2m,t.s2a,t.s3m,t.s3a,t.ftm,t.fta];
+  if(adv){var dt=D(t);trow=trow.concat([pctCell(dt.efg,dt.fga>0),pctCell(dt.ts,dt.fga+t.fta>0),dt.fga?pps(t).toFixed(2):'']);}
+  trow=trow.concat([t.oreb+t.dreb,t.ast,t.stl,t.tov,t.blk,t.pf,t.drew]);
+  rows.push(trow);
+  return rows;
+}
+function seasonBoxCSVRows(A,gp,adv){
+  var used=S.players.filter(function(p){return A.pl[p.id];}).sort(byNum);
+  var head=['Dorsal','Jugador','PJ','Min','Min/PJ','Pts','Pts/PJ'];
+  if(adv)head=head.concat(['eFG%','TS%','PPS']);
+  head=head.concat(['Reb','Ast','Rob','Per','Tap','Fal','F.Rec','+/-']);
+  var rows=[head];
+  used.forEach(function(p){
+    var s=A.pl[p.id],gg=gp[p.id]||0,row=[p.num,p.name,gg,mmss(s.min),gg?mmss(s.min/gg):'',s.pts,gg?(s.pts/gg).toFixed(1):''];
+    if(adv){var d=D(s);row=row.concat([pctCell(d.efg,d.fga>0),pctCell(d.ts,d.fga+s.fta>0),d.fga?pps(s).toFixed(2):'']);}
+    row=row.concat([s.oreb+s.dreb,s.ast,s.stl,s.tov,s.blk,s.pf,s.drew,sgn(s.pm)]);
+    rows.push(row);
+  });
+  return rows;
+}
+function downloadGameCSV(){
+  var g=cur();if(!g)return;
+  var A=analyze([g]),adv=!!S.settings.advStats;
+  var rows=[['Partido: '+S.team.name+' vs '+g.opp],['Fecha: '+fdate(g.date)],[],[S.team.name]]
+    .concat(ourBoxCSVRows(A,g,adv)).concat([[],[g.opp]]).concat(oppBoxCSVRows(A,adv));
+  saveFile('boxscore-'+slug(g.opp)+'-'+(g.date||today())+'.csv','﻿'+csvRows(rows),'CSV guardado');
+}
+function downloadSeasonCSV(){
+  var games=playedGames();if(!games.length)return;
+  var A=analyze(games),gp=seasonGamesPlayed(games),adv=!!S.settings.advStats;
+  var rows=[['Temporada — '+S.team.name],[]].concat(seasonBoxCSVRows(A,gp,adv));
+  saveFile('boxscore-temporada-'+today()+'.csv','﻿'+csvRows(rows),'CSV guardado');
+}
 function advBar(key,label){return '<div class="rep-bar" style="margin:12px 0 0">'+advSwitch(key,label)+'</div>';}
 function viewSeasonStats(g){
   var games=playedGames(),A=analyze(games),gp=seasonGamesPlayed(games),rec=seasonRecord(games),adv=!!S.settings.advStats;
   var recTxt=rec.finished?(rec.w+' victorias, '+rec.l+' derrotas'+(rec.t?', '+rec.t+' empates':'')+' en '+rec.finished+' partido'+(rec.finished===1?'':'s')+' finalizado'+(rec.finished===1?'':'s')):'todavía no hay partidos finalizados';
   var head='<h1 class="tt">Estadísticas</h1>'+statsScopeBar(g)+advBar('advStats','Ver estadísticas avanzadas')
-   +'<div class="res" style="margin-top:10px"><div><b>Temporada</b><div class="mut" style="font-size:13px">'+games.length+' partido'+(games.length===1?'':'s')+' · '+recTxt+'</div></div><div class="sc">'+A.us.pts+'-'+A.opp.pts+'</div></div>';
+   +'<div class="res" style="margin-top:10px"><div><b>Temporada</b><div class="mut" style="font-size:13px">'+games.length+' partido'+(games.length===1?'':'s')+' · '+recTxt+'</div></div><div class="sc">'+A.us.pts+'-'+A.opp.pts+'</div></div>'
+   +(canDL()&&A.events?'<div class="rep-bar" style="margin-top:10px"><button class="btn sm" data-a="downloadSeasonCSV">Descargar CSV</button></div>':'');
   if(!A.events)return head+'<p class="empty">Todavía no hay acciones registradas.</p>';
   return head
    +(adv?'<section class="blk"><div class="blk-h"><h2>Cuatro factores y ritmo (temporada)</h2></div>'+advancedHTML(A)+formulasHTML()+'</section>':'')
@@ -1189,6 +1256,7 @@ function viewStats(g){
   if(!g||U.statsScope==='season')return viewSeasonStats(g);
   var A=analyze([g]),adv=!!S.settings.advStats;
   return '<h1 class="tt">Estadísticas</h1>'+statsScopeBar(g)+advBar('advStats','Ver estadísticas avanzadas')+gameHead(g,A)
+   +(canDL()&&A.events?'<div class="rep-bar" style="margin-top:10px"><button class="btn sm" data-a="downloadGameCSV">Descargar CSV</button></div>':'')
    +(adv?'<section class="blk"><div class="blk-h"><h2>Cuatro factores y ritmo</h2></div>'+advancedHTML(A)+formulasHTML()+'</section>':'')
    +(adv?'<section class="blk"><div class="blk-h"><h2>Momentos de presión</h2></div>'+clutchHTML([g])+'</section>':'')
    +'<section class="blk"><div class="blk-h"><h2>'+esc(S.team.name)+'</h2></div>'+ourBox(A,g,adv)+'</section>'
@@ -1693,7 +1761,7 @@ function saveFile(name,data,okMsg){
   }
   if(STANDALONE){
     try{
-      var blob=new Blob([data],{type:/\.json$/.test(name)?'application/json':'text/html'});
+      var blob=new Blob([data],{type:/\.json$/.test(name)?'application/json':(/\.csv$/.test(name)?'text/csv':'text/html')});
       var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;
       document.body.appendChild(a);a.click();
       setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1500);
@@ -1904,6 +1972,8 @@ var ACT={
   },
   demoGame:function(){makeDemoGame();},
   exportBackup:function(){saveFile('copia-estadisticas-'+today()+'.json',JSON.stringify(S),'Copia guardada');},
+  downloadGameCSV:function(){downloadGameCSV();},
+  downloadSeasonCSV:function(){downloadSeasonCSV();},
   scope:function(t){U.scope=t.dataset.v;render();},
   repShare:function(){var g=cur(),list=reportGames(g);U.sheet={type:'text',title:'Resumen para compartir',text:shareText(g,list)};render();},
   copyText:function(){copyText(document.getElementById('txtArea').value);},
