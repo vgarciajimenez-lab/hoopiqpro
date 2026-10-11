@@ -577,7 +577,7 @@ function newGameObj(opp,date,comp,start,roster,status){
   start=start||[];
   return {id:uid(),opp:opp||'Rival',date:date||today(),comp:comp||'',status:status||'live',
     periodLen:S.settings.periodMin*60,otLen:S.settings.otMin*60,period:1,clock:S.settings.periodMin*60,running:false,
-    start:start.slice(),roster:(roster&&roster.length?roster:start).slice(),oppPlayers:[],oppDefense:'Individual',ourDefense:'Individual',events:[]};
+    start:start.slice(),roster:(roster&&roster.length?roster:start).slice(),oppPlayers:[],oppNames:{},oppDefense:'Individual',ourDefense:'Individual',events:[]};
 }
 /* partidos que ya se han jugado (o se están jugando): excluye los programados para no inflar la temporada con partidos que aún no han pasado */
 function playedGames(){return S.games.filter(function(g){return g.status!=='scheduled';});}
@@ -932,7 +932,8 @@ function foulDots(n){return '<span class="fd">'+[0,1,2,3,4].map(function(i){retu
 function chipHTML(side,k,num,name,st,small){
   var sel=U.sel&&U.sel.side===side&&U.sel.k===k;
   var cls='pl'+(side==='opp'?' opp':'')+(small?' sm':'')+(sel?' sel':'')+(st.pf>=5?' out':(st.pf>=4?' warn':''));
-  return '<button class="'+cls+'" data-a="pick" data-side="'+side+'" data-k="'+esc(k)+'"><b>'+esc(num)+'</b>'+(small?'':'<span class="nm">'+esc(name||'')+'</span>')+foulDots(st.pf)+'<span class="pt">'+st.pts+(small?'':'<i> pts</i>')+'</span></button>';
+  var showNm=small?!!name:true;
+  return '<button class="'+cls+'" data-a="pick" data-side="'+side+'" data-k="'+esc(k)+'"><b>'+esc(num)+'</b>'+(showNm?'<span class="nm">'+esc(name||'')+'</span>':'')+foulDots(st.pf)+'<span class="pt">'+st.pts+(small?'':'<i> pts</i>')+'</span></button>';
 }
 function usSide(g,A,on){
   var us=on.map(function(p){return chipHTML('us',p.id,p.num,p.name,A.pl[p.id]||blank());}).join('');
@@ -940,7 +941,7 @@ function usSide(g,A,on){
 }
 function oppSide(g,A){
   var ds=['EQ'].concat(g.oppPlayers.slice().sort(function(a,b){return (parseInt(a,10)||0)-(parseInt(b,10)||0);}));
-  var op=ds.map(function(d){return chipHTML('opp',d,d==='EQ'?'EQ':d,'',A.op[d]||blank(),true);}).join('')+'<button class="pl add sm" data-a="dorsalSheet" aria-label="Añadir dorsal rival">+</button>';
+  var op=ds.map(function(d){return chipHTML('opp',d,d==='EQ'?'EQ':d,d==='EQ'?'':((g.oppNames&&g.oppNames[d])||''),A.op[d]||blank(),true);}).join('')+'<button class="pl add sm" data-a="dorsalSheet" aria-label="Añadir dorsal rival">+</button>';
   return '<div class="side opp"><div class="side-h"><h2><span class="tn">'+esc(g.opp)+'</span></h2></div><div class="pls wide">'+op+'</div></div>';
 }
 function undoInline(g){
@@ -1126,7 +1127,7 @@ function oppRows(A){
 function oppBox(A,g,adv){
   var rows=oppRows(A).map(function(r){
     var s=r.s;
-    return '<tr><td><b>'+(r.k==='EQ'?'Equipo':'#'+esc(r.k))+'</b></td><td><b>'+s.pts+'</b></td><td>'+ma(s.s2m,s.s2a)+'</td><td>'+ma(s.s3m,s.s3a)+'</td><td>'+ma(s.ftm,s.fta)+'</td>'+shootCells(s,adv)+'<td>'+(s.oreb+s.dreb)+'</td><td>'+s.ast+'</td><td>'+s.stl+'</td><td>'+s.tov+'</td><td>'+s.blk+'</td><td>'+s.pf+'</td><td>'+s.drew+'</td></tr>';
+    var nm4=g.oppNames&&g.oppNames[r.k];return '<tr><td><b>'+(r.k==='EQ'?'Equipo':'#'+esc(r.k))+'</b>'+(nm4?' <span class="mut">'+esc(nm4)+'</span>':'')+'</td><td><b>'+s.pts+'</b></td><td>'+ma(s.s2m,s.s2a)+'</td><td>'+ma(s.s3m,s.s3a)+'</td><td>'+ma(s.ftm,s.fta)+'</td>'+shootCells(s,adv)+'<td>'+(s.oreb+s.dreb)+'</td><td>'+s.ast+'</td><td>'+s.stl+'</td><td>'+s.tov+'</td><td>'+s.blk+'</td><td>'+s.pf+'</td><td>'+s.drew+'</td></tr>';
   }).join('');
   if(!rows)return '<p class="empty">Aún no hay acciones del rival.</p>';
   var t=A.opp;
@@ -1192,18 +1193,18 @@ function ourBoxCSVRows(A,g,adv){
   rows.push(trow);
   return rows;
 }
-function oppBoxCSVRows(A,adv){
-  var head=['Dorsal','Pts','T2M','T2A','T3M','T3A','TLM','TLA'];
+function oppBoxCSVRows(A,adv,g){
+  var head=['Dorsal','Jugador','Pts','T2M','T2A','T3M','T3A','TLM','TLA'];
   if(adv)head=head.concat(['eFG%','TS%','PPS']);
   head=head.concat(['Reb','Ast','Rob','Per','Tap','Fal','F.Rec']);
   var rows=[head];
   oppRows(A).forEach(function(r){
-    var s=r.s,row=[r.k==='EQ'?'Equipo':r.k,s.pts,s.s2m,s.s2a,s.s3m,s.s3a,s.ftm,s.fta];
+    var s=r.s,nm6=(r.k!=='EQ'&&g&&g.oppNames&&g.oppNames[r.k])||'',row=[r.k==='EQ'?'Equipo':r.k,nm6,s.pts,s.s2m,s.s2a,s.s3m,s.s3a,s.ftm,s.fta];
     if(adv){var d=D(s);row=row.concat([pctCell(d.efg,d.fga>0),pctCell(d.ts,d.fga+s.fta>0),d.fga?pps(s).toFixed(2):'']);}
     row=row.concat([s.oreb+s.dreb,s.ast,s.stl,s.tov,s.blk,s.pf,s.drew]);
     rows.push(row);
   });
-  var t=A.opp,trow=['Total',t.pts,t.s2m,t.s2a,t.s3m,t.s3a,t.ftm,t.fta];
+  var t=A.opp,trow=['Total','',t.pts,t.s2m,t.s2a,t.s3m,t.s3a,t.ftm,t.fta];
   if(adv){var dt=D(t);trow=trow.concat([pctCell(dt.efg,dt.fga>0),pctCell(dt.ts,dt.fga+t.fta>0),dt.fga?pps(t).toFixed(2):'']);}
   trow=trow.concat([t.oreb+t.dreb,t.ast,t.stl,t.tov,t.blk,t.pf,t.drew]);
   rows.push(trow);
@@ -1227,7 +1228,7 @@ function downloadGameCSV(){
   var g=cur();if(!g)return;
   var A=analyze([g]),adv=!!S.settings.advStats;
   var rows=[['Partido: '+S.team.name+' vs '+g.opp],['Fecha: '+fdate(g.date)],[],[S.team.name]]
-    .concat(ourBoxCSVRows(A,g,adv)).concat([[],[g.opp]]).concat(oppBoxCSVRows(A,adv));
+    .concat(ourBoxCSVRows(A,g,adv)).concat([[],[g.opp]]).concat(oppBoxCSVRows(A,adv,g));
   saveFile('boxscore-'+slug(g.opp)+'-'+(g.date||today())+'.csv','﻿'+csvRows(rows),'CSV guardado');
 }
 function downloadSeasonCSV(){
@@ -1669,9 +1670,10 @@ function sheetClock(g){
 function sheetDorsal(g){
   var ex=g.oppPlayers.slice().sort(function(a,b){return (parseInt(a,10)||0)-(parseInt(b,10)||0);}).map(function(d){
     var used=g.events.some(function(e){return e.side==='opp'&&e.k===d;});
-    return '<button class="chip" data-a="dorsalDel" data-k="'+esc(d)+'"'+(used?' disabled style="opacity:.5"':'')+' aria-label="Quitar dorsal '+esc(d)+'">'+esc(d)+(used?'':' ×')+'</button>';
+    var nm=(g.oppNames&&g.oppNames[d])||'';
+    return '<button class="chip" data-a="dorsalDel" data-k="'+esc(d)+'"'+(used?' disabled style="opacity:.5"':'')+' aria-label="Quitar dorsal '+esc(d)+'">#'+esc(d)+(nm?' '+esc(nm):'')+(used?'':' ×')+'</button>';
   }).join('');
-  return '<h3>Añadir dorsal rival</h3><div class="prow"><input class="in" id="dorsalIn" inputmode="numeric" maxlength="3" placeholder="Nº" autofocus><button class="btn pri" data-a="dorsalAdd">Añadir</button></div>'
+  return '<h3>Añadir dorsal rival</h3><div class="prow"><input class="in" id="dorsalIn" inputmode="numeric" maxlength="3" placeholder="Nº" autofocus><input class="in" id="dorsalNameIn" placeholder="Nombre (opcional)"><button class="btn pri" data-a="dorsalAdd">Añadir</button></div>'
    +(ex?'<p class="sub" style="margin-top:12px">Añadidos (toca uno sin acciones para quitarlo):</p><div class="chiprow" style="flex-wrap:wrap">'+ex+'</div>':'')
    +'<div class="btns"><button class="btn" data-a="closeSheet">Cerrar</button></div>';
 }
@@ -1881,10 +1883,13 @@ var ACT={
     var g=cur(),i=document.getElementById('dorsalIn'),v=(i.value||'').trim().replace(/^0+(?=\d)/,'');
     if(!v||!/^\d{1,3}$/.test(v)){toast('Escribe un dorsal válido');return;}
     if(g.oppPlayers.indexOf(v)>=0){toast('Ese dorsal ya está');return;}
-    g.oppPlayers.push(v);save();render();
+    var ni=document.getElementById('dorsalNameIn'),nm=(ni&&ni.value||'').trim();
+    g.oppPlayers.push(v);
+    if(nm){g.oppNames=g.oppNames||{};g.oppNames[v]=nm;}
+    save();render();
     setTimeout(function(){var n=document.getElementById('dorsalIn');if(n)n.focus();},50);
   },
-  dorsalDel:function(t){var g=cur();g.oppPlayers=g.oppPlayers.filter(function(d){return d!==t.dataset.k;});save();render();},
+  dorsalDel:function(t){var g=cur();var d=t.dataset.k;g.oppPlayers=g.oppPlayers.filter(function(x){return x!==d;});if(g.oppNames)delete g.oppNames[d];save();render();},
   newGameSheet:function(){
     if(S.players.length<5){toast('Añade al menos 5 jugadores en Equipo');U.top=true;U.tab='team';render();return;}
     U.form={mode:'now',opp:'',date:today(),comp:'',start:[],roster:S.players.map(function(p){return p.id;})};U.sheet={type:'newGame'};render();
