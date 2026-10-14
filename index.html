@@ -474,6 +474,56 @@ summary{cursor:pointer;font-weight:700;padding:8px 0}
 .seg2 button.on{background:var(--court);border-color:var(--court);color:var(--on-court)}
 .pill.sched{background:var(--foul-bg);color:var(--foul)}
 
+/* ---------- rediseno: botones de tiro y stats compactos ---------- */
+.shotrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.shotp{border-radius:12px;background:var(--surface);border:2px solid var(--line);overflow:hidden}
+.shotp.dim{opacity:.42}
+.shotp .mk,.shotp .ms{display:flex;align-items:center;justify-content:center;gap:6px;padding:10px 4px;font-weight:700;width:100%}
+.shotp .mk{background:var(--made-bg);color:var(--made);font:800 15px var(--font-body)}
+.shotp .mk b{font:800 22px/1 var(--font-display)}
+.shotp .ms{background:var(--surface);color:var(--muted);font-size:12px;border-top:1px solid var(--line)}
+.shotp .ms b{color:var(--miss)}
+.statrow{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:8px}
+.statb{min-height:46px;border-radius:10px;background:var(--surface-2);border:1.5px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--ink)}
+.statb.dim{opacity:.42}
+.statb b{font:800 16px/1 var(--font-display)}
+.foulb{width:100%;min-height:48px;border-radius:12px;background:var(--foul-bg);color:var(--foul);border:2px solid transparent;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px}
+.foulb.dim{opacity:.42}
+.ctxtoggle{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;font-size:13.5px;font-weight:600;color:var(--muted);text-align:left}
+.ctxtoggle span.v{color:var(--court-fg);font-weight:700;flex:none}
+.ctxtoggle b{color:var(--ink)}
+
+/* ---------- rediseno: informe menos saturado ---------- */
+.keys3{display:flex;flex-direction:column;gap:8px;margin:0}
+.keys3 li{padding:9px 0 9px 14px;border-left:4px solid var(--court);background:var(--surface);border-radius:0 10px 10px 0;font-size:14.5px;list-style:none}
+.keys3 li.w{border-left-color:var(--opp)}
+.rep details.morekeys{margin-top:8px}
+.rep details.morekeys>summary{font:700 13.5px var(--font-body);color:var(--court-fg);padding:4px 0 4px 18px;list-style:none}
+.rep details.morekeys>summary::-webkit-details-marker{display:none}
+.rep details.morekeys>summary::before{border-width:5px 0 5px 6px;top:7px}
+.rep details.morekeys[open]>summary{margin-bottom:6px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 10px}
+.tile{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:10px 12px}
+.tile .lbl{font-size:12px;color:var(--muted);font-weight:600}
+.tile .vv{font:800 24px/1.1 var(--font-display);margin-top:2px}
+.tile .vv small{font:600 13px var(--font-body);color:var(--muted)}
+.tile.win .vv{color:var(--made)}
+.tile.lose .vv{color:var(--miss)}
+.rep details.seefull{margin-top:4px}
+.rep details.seefull>summary{font:700 13px var(--font-body);color:var(--court-fg);padding:4px 0 4px 18px;list-style:none}
+.rep details.seefull>summary::-webkit-details-marker{display:none}
+.rep details.seefull>summary::before{border-width:5px 0 5px 6px;top:7px}
+.rep details.seefull[open]>summary{margin-bottom:6px}
+.clusters{display:flex;flex-direction:column;gap:10px}
+.rep details.clu{margin:0;border:1.5px solid var(--line);border-radius:12px;padding:0 14px;background:var(--surface)}
+.rep details.clu>summary{font:700 16px/1.3 var(--font-body);padding:13px 0 13px 24px;margin:0}
+.rep details.clu>summary::before{top:18px}
+.rep details.clu[open]>summary{margin-bottom:0;padding-bottom:4px}
+.clu-d{display:block;font:400 13px/1.3 var(--font-body);color:var(--muted);font-weight:400;margin-top:2px}
+.rep details.clu h3{font:700 14px/1.2 var(--font-body);margin:16px 0 8px;padding-top:14px;border-top:1px solid var(--line);color:var(--ink)}
+.rep details.clu>h3:first-of-type{border-top:0;padding-top:0;margin-top:2px}
+.rep details.clu>*:last-child{margin-bottom:14px}
+
 </style>
 </head>
 <body>
@@ -914,7 +964,7 @@ function viewLive(g){
   var on=onCourtInfo(g,'us'),awayOn=g.neutral?onCourtInfo(g,'opp'):[];
   var h=scoreboard(g,A);
   if(g.status==='done')h+='<div class="note">Partido finalizado. <button class="lk" data-a="reopen" data-id="'+g.id+'">Reabrir</button></div>';
-  h+=assistBar(g,on,awayOn)+foulRecBar(g,on)+'<div class="live-grid">'+usSide(g,A,on)+'<div class="center">'+actions(g)+undoInline(g)+'</div>'+oppSide(g,A)+'</div>'+contextPanel(g);
+  h+=assistBar(g,on,awayOn)+foulRecBar(g,on)+'<div class="live-grid">'+usSide(g,A,on)+'<div class="center">'+actions(g)+undoInline(g)+'</div>'+oppSide(g,A)+'</div>';
   h+='<section class="blk"><div class="blk-h"><h2>Últimas acciones</h2></div><ul class="log">'+logHTML(g,7)+'</ul></section>';
   return h;
 }
@@ -991,12 +1041,15 @@ function whoHTML(){
 }
 function actions(g){
   var dis=U.sel?'':' dim';
-  function b(a,cls,main,sub){return '<button class="ab '+cls+dis+'" data-a="act" data-v="'+a+'"><b>'+main+'</b><small>'+sub+'</small></button>';}
+  function shotp(mkV,msV,big,sub){
+    return '<div class="shotp'+dis+'"><button class="mk" data-a="act" data-v="'+mkV+'"><b>'+big+'</b>'+sub+'</button><button class="ms" data-a="act" data-v="'+msV+'">✗ fallado</button></div>';
+  }
+  function statb(a,main,sub){return '<button class="statb'+dis+'" data-a="act" data-v="'+a+'"><b>'+main+'</b>'+sub+'</button>';}
   return '<div class="who">'+whoHTML()+mapSwitch()+'</div><div class="acts">'
-   +'<div class="row3">'+b('ft1','made','+1','Tiro libre')+b('s21','made','+2','Canasta')+b('s31','made','+3','Triple')+'</div>'
-   +'<div class="row3">'+b('ft0','miss','✗','TL fallado')+b('s20','miss','✗','T2 fallado')+b('s30','miss','✗','T3 fallado')+'</div>'
-   +'<div class="row4">'+b('oreb','','Reb','Ataque')+b('dreb','','Reb','Defensa')+b('ast','','Ast','Asistencia')+b('stl','','Rob','Robo')+'</div>'
-   +'<div class="row3">'+b('tov','','Per','Pérdida')+b('blk','','Tap','Tapón')+b('pf','foul','Falta','Personal')+'</div></div>'
+   +'<div class="shotrow">'+shotp('ft1','ft0','+1','Tiro libre')+shotp('s21','s20','+2','Canasta')+shotp('s31','s30','+3','Triple')+'</div>'
+   +'<div class="statrow">'+statb('oreb','Reb','Ataque')+statb('dreb','Reb','Defensa')+statb('ast','Ast','Asist.')+statb('stl','Rob','Robo')+statb('tov','Per','Pérdida')+statb('blk','Tap','Tapón')+'</div>'
+   +'<button class="foulb'+dis+'" data-a="act" data-v="pf">⚠ Falta personal</button>'
+   +ctxToggleHTML(g)+'</div>'
    +(S.settings.map?'':'<p class="hint sm"><b>Mapa de tiro desactivado.</b> Actívalo con el interruptor para marcar desde dónde se tira.</p>');
 }
 function contextPanel(g){
@@ -1006,6 +1059,15 @@ function contextPanel(g){
   var oplays='<div class="chiprow"><span class="lbl">Nuestra jugada</span>'+PLAYS.map(function(p){return '<button class="chip'+(U.oplay===p?' on':'')+'" data-a="oplay" data-v="'+esc(p)+'">'+esc(p)+'</button>';}).join('')+'</div>';
   return odefs+oplays+(U.oplay?'<p class="hint sm">Nuestra jugada elegida: <b>'+esc(U.oplay)+'</b>. Se aplica a nuestro siguiente tiro o pérdida.</p>':'')
    +defs+plays+(U.play?'<p class="hint sm">Jugada elegida: <b>'+esc(U.play)+'</b>. Se aplica al siguiente tiro o pérdida del rival.</p>':'');
+}
+function ctxToggleHTML(g){
+  var open=!!U.ctxOpen,parts=[];
+  if((g.ourDefense||'Individual')!=='Individual')parts.push('Def. '+g.ourDefense);
+  if(U.oplay)parts.push('Jugada '+U.oplay);
+  if(g.oppDefense&&g.oppDefense!=='Individual')parts.push('Def. rival '+g.oppDefense);
+  if(U.play)parts.push('Jugada rival '+U.play);
+  return '<button class="ctxtoggle" data-a="ctxToggle"><span>Contexto de la jugada'+(parts.length?': <b>'+esc(parts.join(' · '))+'</b>':'')+'</span><span class="v">'+(open?'▴ Ocultar':'▾ Mostrar')+'</span></button>'
+   +(open?contextPanel(g):'');
 }
 
 /* ---------- métricas avanzadas ---------- */
@@ -1484,6 +1546,18 @@ function cmpTable(A,adv,g){
    +(adv?r('Puntos por posesión',du.ppp.toFixed(2),dO.ppp.toFixed(2),du.ppp,dO.ppp,'hi'):'')
    +'</tbody></table></div>';
 }
+function cmpTiles(A,g){
+  var u=A.us,o=A.opp,du=D(u),dO=D(o);
+  var fgU=du.fga?du.fgm/du.fga:0,fgO=dO.fga?dO.fgm/dO.fga:0;
+  var rebU=u.oreb+u.dreb,rebO=o.oreb+o.dreb;
+  function tile(lbl,uv,ov,win){return '<div class="tile'+(win===true?' win':win===false?' lose':'')+'"><div class="lbl">'+lbl+'</div><div class="vv">'+uv+' <small>- '+ov+'</small></div></div>';}
+  return '<div class="tiles">'
+   +tile('Puntos',u.pts,o.pts,u.pts===o.pts?null:u.pts>o.pts)
+   +tile('Tiros de campo',pc(fgU,du.fga>0),pc(fgO,dO.fga>0),fgU===fgO?null:fgU>fgO)
+   +tile('Rebotes totales',rebU,rebO,rebU===rebO?null:rebU>rebO)
+   +tile('Pérdidas',u.tov,o.tov,u.tov===o.tov?null:u.tov<o.tov)
+   +'</div>';
+}
 function playsTable(map){
   var ks=Object.keys(map).sort(function(a,b){return map[b].n-map[a].n;});
   if(!ks.length)return '<p class="empty">Todavía no hay datos de jugadas registradas.</p>';
@@ -1523,22 +1597,35 @@ function reportBody(g,list){
     :'<p class="meta">'+list.map(function(x){var a=analyze([x]);return fdate(x.date)+': '+a.us.pts+'-'+a.opp.pts;}).join(', ')+'</p>';
   if(!A.events)return '<h1>'+title+'</h1><p class="meta">'+meta+'</p><p class="empty">Todavía no hay acciones registradas en este partido.</p>';
   var keys=keyPoints(A);
-  function d(title,body,open){return '<details'+(open?' open':'')+'><summary>'+title+'</summary>'+body+'</details>';}
+  function h3(t,body){return '<h3>'+t+'</h3>'+body;}
+  function clu(t,desc,body){return '<details class="clu"><summary>'+t+'<span class="clu-d">'+desc+'</span></summary>'+body+'</details>';}
+  function keyLi(k){return '<li'+(k.w?' class="w"':'')+'>'+esc(k.t)+'</li>';}
+  var keysTop=keys.slice(0,3),keysRest=keys.slice(3);
+  var keysTopHTML=keysTop.length?'<ul class="keys3">'+keysTop.map(keyLi).join('')+'</ul>':'<p class="empty">Hacen falta más acciones para sacar conclusiones.</p>';
+  var keysMoreHTML=keysRest.length?'<details class="morekeys"><summary>Ver las '+keys.length+' claves</summary><ul class="keys3">'+keysRest.map(keyLi).join('')+'</ul></details>':'';
+  var oppLabel=g.neutral?('Jugadoras de '+esc(g.opp||'Equipo B')):'Jugadores del rival';
+  var clusterRival=clu('Cómo juega el rival','Jugadores, tiros, ataque y defensa',
+     h3(oppLabel,oppBox(A,g,adv))
+    +h3('Tiros del rival',shotBlock(A.shots.opp,'o'))
+    +h3('Cómo atacan ellos',playsTable(A.play))
+    +h3('Cómo defienden ellos contra nosotros',defsTable(A.def,'Nuestros tiros')));
+  var clusterUs=clu('Cómo jugamos nosotros','Nuestros tiros y nuestra defensa',
+     (g.neutral?h3('Jugadoras de '+esc(homeLabel),ourBox(A,g,adv)):'')
+    +h3('Cómo atacamos nosotros',playsTable(A.oplay))
+    +h3('Cómo defendemos nosotros contra ellos',defsTable(A.odef,'Sus tiros'))
+    +h3('Nuestros tiros',shotBlock(A.shots.us,'')));
+  var clusterScore='';
+  if(single||adv){
+    var scoreBody=(single?(perTable(A,g)+'<div style="margin-top:12px">'+flowSVG(g,A)+'</div><p class="meta">Diferencia de marcador: por encima de la línea va delante '+esc(homeLabel)+', por debajo '+esc(g.opp||'el rival')+'.</p>'):'')
+     +(adv?h3('Momentos de presión',clutchHTML(list)):'');
+    clusterScore=clu('Marcador por cuartos','Evolución del resultado',scoreBody);
+  }
   return '<h1>'+title+'</h1><p class="meta">'+meta+'</p>'+res
    +'<div class="rep-bar noprint" style="margin-top:10px">'+advSwitch('advReport','Ver estadísticas avanzadas')+'</div>'
-   +'<section><h2>Claves del rival</h2>'+(keys.length?'<ul class="keys">'+keys.map(function(k){return '<li'+(k.w?' class="w"':'')+'>'+esc(k.t)+'</li>';}).join('')+'</ul>':'<p class="empty">Hacen falta más acciones para sacar conclusiones.</p>')+aiHTML(key)+'</section>'
+   +'<section><h2>Claves del rival</h2>'+keysTopHTML+keysMoreHTML+aiHTML(key)+'</section>'
    +(adv?'<section><h2>Cuatro factores y ritmo</h2>'+advancedHTML(A,g)+'</section>':'')
-   +(adv?d('Momentos de presión',clutchHTML(list)):'')
-   +'<section><h2>Comparativa de equipos</h2>'+cmpTable(A,adv,g)+(single?'':'<p class="meta">Suma de '+list.length+' partidos.</p>')+'</section>'
-   +(g.neutral?d('Jugadoras de '+esc(homeLabel),ourBox(A,g,adv)):'')
-   +d(g.neutral?('Jugadoras de '+esc(g.opp||'Equipo B')):'Jugadores del rival',oppBox(A,g,adv))
-   +d('Tiros del rival',shotBlock(A.shots.opp,'o'))
-   +d('Cómo atacan ellos',playsTable(A.play))
-   +d('Cómo defienden ellos contra nosotros',defsTable(A.def,'Nuestros tiros'))
-   +d('Cómo atacamos nosotros',playsTable(A.oplay))
-   +d('Cómo defendemos nosotros contra ellos',defsTable(A.odef,'Sus tiros'))
-   +(single?d('Marcador por cuartos',perTable(A,g)+'<div style="margin-top:12px">'+flowSVG(g,A)+'</div><p class="meta">Diferencia de marcador: por encima de la línea va delante '+esc(homeLabel)+', por debajo '+esc(g.opp||'el rival')+'.</p>'):'')
-   +d('Nuestros tiros',shotBlock(A.shots.us,''));
+   +'<section><h2>Comparativa de equipos</h2>'+cmpTiles(A,g)+'<details class="seefull"><summary>Ver tabla completa</summary>'+cmpTable(A,adv,g)+(single?'':'<p class="meta">Suma de '+list.length+' partidos.</p>')+'</details></section>'
+   +'<section><h2>Más detalle</h2><div class="clusters">'+clusterRival+clusterUs+clusterScore+'</div></section>';
 }
 function viewReport(g){
   if(!g)return noGame('Informe');
@@ -1936,6 +2023,7 @@ var ACT={
   },
   mapNone:function(){var b=U.sheet.base;U.sheet=null;commit(b);},
   mapToggle:function(){S.settings.map=!S.settings.map;save();render();},
+  ctxToggle:function(){U.ctxOpen=!U.ctxOpen;render();},
   advToggle:function(t){var k=t.dataset.k;S.settings[k]=!S.settings[k];save();render();},
   play:function(t){U.play=U.play===t.dataset.v?null:t.dataset.v;render();},
   oplay:function(t){U.oplay=U.oplay===t.dataset.v?null:t.dataset.v;render();},
